@@ -76,7 +76,7 @@ def read_data() -> Union[pd.DataFrame, pd.Series]:
 
     # Data download from GDrive
     # data_url = dvc.api.get_url(path="train.csv", remote="gdrive_mlops")
-    data = dvc.api.read("train.csv", repo="", remote="mlops_gdrive", mode="r")
+    data = dvc.api.read("train.csv", remote="mlops_gdrive", mode="r")
 
     log.info("Data download complete")
     # Data preprocessing in accordance with specs
