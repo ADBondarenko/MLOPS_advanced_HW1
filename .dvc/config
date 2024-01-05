@@ -1,2 +1,4 @@
-['remote "gdrive_mlops"']
+[core]
+    remote = mlops_gdrive
+['remote "mlops_gdrive"']
     url = gdrive://1xup3HIdxvJfJpDHUS2m5QbPCL9i6k7tD

@@ -1,2 +1,2 @@
 defaults: 
-	- model: hist_gb_regression
+   - models: boosting_reg
