@@ -7,6 +7,12 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, median_absolute_error, r2_score
 
+# Initializing a logger globally,
+# code breaks otherwise when called outside of "__main".
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.StreamHandler())
+
 
 def read_data_test() -> Union[pd.DataFrame, pd.Series]:
     """

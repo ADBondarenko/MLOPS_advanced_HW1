@@ -15,6 +15,12 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import LassoLars, LinearRegression
 from sklearn.metrics import mean_squared_error, median_absolute_error, r2_score
 
+# Initializing a logger globally,
+# code breaks otherwise when called outside of "__main".
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.StreamHandler())
+
 
 @dataclass
 class LinearRegressionConfig:
@@ -54,18 +60,21 @@ def init() -> str:
     timestamp_ = str(datetime.now().strftime("%Y%m%d %H:%M:%S"))
     exp_name = f"{timestamp_}_mlops_adv_hw"
     # uri for offline testing of tracking else it breaks
+    # log.info("Connecting to MLFlow server...")
     # offline_uri_ = "http://127.0.0.1:2020"
     # mlflow.create_experiment(exp_name, artifact_location=offline_uri_)
     # mlflow.set_tracking_uri(offline_uri_)
     # mlflow.set_registry_uri(offline_uri_)
     # mlflow.set_experiment(exp_name)
-
+    # log.info("Connection succesful")
     # uri for traccking as per task
+    log.info("Connecting to MLFlow server...")
     uri_ = "http://128.0.0.1:8080"
     mlflow.create_experiment(exp_name, artifact_location=uri_)
     mlflow.set_tracking_uri(uri_)
     mlflow.set_registry_uri(uri_)
     mlflow.set_experiment(exp_name)
+    log.info("Connection succesful")
     return exp_name
 
 
