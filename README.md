@@ -25,9 +25,9 @@ hw-1-advanced-service/<br>
 │<br>
 ├── main.py<br>
 └── train_infer/<br>       
-    ├── __init__.py<br>
-    ├── train.py<br>
-    └── infer.py<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── __init__.py<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── train.py<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── infer.py<br>
 # Для запуска в качестве пакета локально можно использовать 
 ```
 python -m hw-1-advanced-service.main
