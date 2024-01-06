@@ -1,2 +1,3 @@
 defaults: 
+   - m_name : hist_gb_boosting
    - models: boosting_reg

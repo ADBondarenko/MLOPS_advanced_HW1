@@ -53,10 +53,19 @@ def init() -> str:
     # Создаём эксперимент
     timestamp_ = str(datetime.now().strftime("%Y%m%d %H:%M:%S"))
     exp_name = f"{timestamp_}_mlops_adv_hw"
-    uri_ = "https://128.0.1.1:8080"
+    # uri for offline testing of tracking else it breaks
+    # offline_uri_ = "http://127.0.0.1:2020"
+    # mlflow.create_experiment(exp_name, artifact_location=offline_uri_)
+    # mlflow.set_tracking_uri(offline_uri_)
+    # mlflow.set_registry_uri(offline_uri_)
+    # mlflow.set_experiment(exp_name)
+
+    # uri for traccking as per task
+    uri_ = "http://128.0.0.1:8080"
     mlflow.create_experiment(exp_name, artifact_location=uri_)
-    mlflow.set_experiment(exp_name)
+    mlflow.set_tracking_uri(uri_)
     mlflow.set_registry_uri(uri_)
+    mlflow.set_experiment(exp_name)
     return exp_name
 
 
@@ -76,13 +85,18 @@ def read_data() -> Union[pd.DataFrame, pd.Series]:
 
     # Data download from GDrive
     # data_url = dvc.api.get_url(path="train.csv", remote="gdrive_mlops")
-    data = dvc.api.read("train.csv", remote="mlops_gdrive", mode="r")
+    data = dvc.api.read(
+        "train.csv",
+        repo="https://github.com/ADBondarenko/MLOPS_advanced_HW1",
+        remote="mlops_gdrive",
+        mode="r",
+    )
 
     log.info("Data download complete")
     # Data preprocessing in accordance with specs
     df = pd.read_csv(StringIO(data))
     y_train = df.target
-    X_train = df.drop(columns=["target"])
+    X_train = df.drop(columns=["target"]).set_index("time")
 
     log.info("Data is split into X_train, y_train")
 
@@ -113,24 +127,26 @@ def train_model(
     """
     # Initialize model:
 
-    model_name = cfg.model
-    if model_name == "hist_gb_reg":
-        params = {k: v for k, v in cfg.models.boosting_reg}
-        model = HistGradientBoostingRegressor(**params)
+    model_name = cfg.m_name.name
+    # sklearn.ensemble.
+    # _hist_gradient_boosting.gradient_boosting.HistGradientBoostingRegressor,
+    #                        sklearn.linear_model._base.LinearRegression,
+    #                        sklearn.linear_model._least_angle.LassoLars
+    if model_name == "hist_gb_boosting":
+        model = HistGradientBoostingRegressor(**cfg.models)
 
     elif model_name == "lin_reg":
-        params = {k: v for k, v in cfg.models.lin_reg}
-        model = LinearRegression(**params)
+        model = LinearRegression(**cfg.models)
 
     elif model_name == "lasso_reg":
-        params = {k: v for k, v in cfg.models.lasso_reg}
-        model = LassoLars(**params)
+        model = LassoLars(**cfg.models)
 
     else:
         log.info(f"Support for the model {model_name} is not added")
         raise ValueError("Model not implemented")
 
     # Train model:
+    log.info("Started fitting model...")
     model.fit(X_train, y_train)
 
     log.info("Model succesfully fit")
@@ -155,7 +171,7 @@ def evaluate_model(
                              "r2_score" : float
                              "median_absolute_error": : float}
     """
-
+    log.info("Starting model evalutation...")
     y_true = y_train
     y_pred = model.predict(X_train)
 
@@ -166,7 +182,7 @@ def evaluate_model(
             y_true=y_true, y_pred=y_pred
         ),
     }
-
+    log.info("Model evaluation succesfull!")
     return results_dict
 
 
@@ -196,15 +212,16 @@ def main(cfg: DictConfig):
         mlflow.log_params(OmegaConf.to_container(cfg.models, resolve=True))
         X_train, y_train = read_data()
         model_ = train_model(cfg, X_train, y_train)
-
-        mlflow.save_model(cfg.save, model_)
+        log.info("Started logging model...")
         mlflow.sklearn.log_model(model_, f"{exp_id}_model")
-
-        metrics = evaluate_model(model_)
+        log.info("Logging model succesfull")
+        metrics = evaluate_model(model_, X_train, y_train)
+        log.info("Started logging metrics...")
         for metric in list(metrics.keys()):
             mlflow.log_metric(f"{metric}", metrics[metric])
-
-    return exp_id, model_, metrics
+        log.info("Logging metrics succesfull")
+    trained_model_dict = {"exp_id": exp_id, "model": model_, "metrics": metrics}
+    return trained_model_dict
 
 
 if __name__ == "__main__":
@@ -219,5 +236,5 @@ if __name__ == "__main__":
 
     cs.store(group="models", name="default", node=HistGradientBoostingRegressorConfig)
     log.info("Hydra configs saved to ConfigStore")
-    exp_id, model_, metrics = main()
+    trained_model_dict = main()
     log.info("Training finished")
