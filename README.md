@@ -21,13 +21,13 @@ GoogleDrive поднят в соответствующей папке, проп�
 Необходимые требования описаны в pyproject.toml, возможен запуск из CLI при помощи Hydra с некоторыми параметрами.
 
 # Сама структура пакета такая
-hw-1-advanced-service/
-│
-├── main.py
-└── train_infer/         
-    ├── __init__.py
-    ├── train.py
-    └── infer.py
+hw-1-advanced-service/<br>
+│<br>
+├── main.py<br>
+└── train_infer/<br>       
+    ├── __init__.py<br>
+    ├── train.py<br>
+    └── infer.py<br>
 # Для запуска в качестве пакета локально можно использовать 
 ```
 python -m hw-1-advanced-service.main
